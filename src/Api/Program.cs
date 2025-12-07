@@ -58,7 +58,7 @@ builder.AddOpenAIResponses();
 
 builder.UseWhatsApp();
 
-var whatsapp = builder.Services.AddWhatsApp(services => new LinkFormattingHandler(new AgentHandler(services.GetRequiredKeyedService<AIAgent>("gropilot"))))
+var whatsapp = builder.Services.AddWhatsApp<AgentHandler>()
     .UseOpenTelemetry("Gropilot")
     .UseLogging()
     .UseIgnore();
