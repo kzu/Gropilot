@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="src/Api/Api.csproj" Id="4e5c24bd-0708-4aea-a9b2-097b855c2771" />
   <Project Path="src/Console/Console.csproj" Id="996067d9-7ab6-4ed6-a92b-3528611800a5" />
   <Project Path="src/Gropilot/Gropilot.csproj" Id="4f5eaa2d-881d-44c5-9372-778b9955c1ab" />
   <Project Path="src/Tests/Tests.csproj" Id="ce88d6d5-7481-4993-8336-82b07d0b0668" />
