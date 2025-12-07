@@ -3,6 +3,8 @@ using Azure.Messaging.EventGrid;
 using Devlooped.Extensions.AI.Grok;
 using Devlooped.WhatsApp;
 using Gropilot;
+using Grpc.Core;
+using Grpc.Net.Client.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Azure.Functions.Worker;
@@ -35,6 +37,32 @@ builder.Services.AddKeyedChatClient("grok", new GrokClient(
     Throw.IfNullOrEmpty(builder.Configuration["XAI_API_KEY"], "XAI_API_KEY"),
     new GrokClientOptions
     {
+        ChannelOptions = new()
+        {
+            ServiceConfig = new()
+            {
+                MethodConfigs =
+                {
+                    new MethodConfig
+                    {
+                        Names = { MethodName.Default },
+                        RetryPolicy = new RetryPolicy
+                        {
+                            MaxAttempts = 5,
+                            InitialBackoff = TimeSpan.FromSeconds(1),
+                            MaxBackoff = TimeSpan.FromSeconds(5),
+                            BackoffMultiplier = 1.5,
+                            RetryableStatusCodes = 
+                            { 
+                                StatusCode.Unavailable, 
+                                StatusCode.DeadlineExceeded, 
+                                StatusCode.Aborted 
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }).AsIChatClient("grok-4-1-fast"));
 
 builder.Services.AddAIAgent("gropilot",
