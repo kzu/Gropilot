@@ -19,7 +19,9 @@ class AgentHandler([FromKeyedServices("gropilot")] AIAgent gropilot) : IWhatsApp
             yield break;
 
         var response = await gropilot.RunAsync(text.Text, cancellationToken: cancellation);
+        var content = response.Messages.LastOrDefault()?.Contents.OfType<Microsoft.Extensions.AI.TextContent>().LastOrDefault();
 
-        yield return message.Reply(response.Text);
+        if (content != null)
+            yield return message.Reply(content.Text);
     }
 }
