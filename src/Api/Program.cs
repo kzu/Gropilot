@@ -1,9 +1,13 @@
-using Azure.Identity;
+﻿using Azure.Identity;
 using Azure.Messaging.EventGrid;
+using Devlooped.Extensions.AI.Grok;
 using Devlooped.WhatsApp;
 using Gropilot;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Hosting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,15 +28,40 @@ builder.Services
 builder.Environment.EnvironmentName = "Development";
 #endif
 
+var interactiveCreds = builder.Environment.IsDevelopment();
+builder.Configuration.AddAzureKeyVault(new Uri("https://gropilot.vault.azure.net/"), new DefaultAzureCredential(interactiveCreds));
+
+builder.Services.AddKeyedChatClient("grok", new GrokClient(
+    Throw.IfNullOrEmpty(builder.Configuration["XAI_API_KEY"], "XAI_API_KEY"),
+    new GrokClientOptions
+    {
+    }).AsIChatClient("grok-4-1-fast"));
+
+builder.Services.AddAIAgent("gropilot",
+    """
+    You are Gropilot, a Grok-powered AI developer copilot designed to assist with all GitHub-related tasks. 
+    You can help users with code reviews, pull requests, issue management, and repository maintenance. 
+    Always provide clear, concise, and actionable responses to help users effectively manage their GitHub projects.
+    """,
+    """
+    Grok-powered developer copilot for your all your GitHub needs.
+    """, 
+    "grok")
+    .WithAITool(new HostedMcpServerTool("GitHub", "https://api.githubcopilot.com/mcp/")
+    {
+        AuthorizationToken = Throw.IfNullOrEmpty(builder.Configuration["GITHUB_TOKEN"], "GITHUB_TOKEN"),
+    });
+
+builder.AddOpenAIResponses();
+
+#region WhatsApp Setup
+
 builder.UseWhatsApp();
 
-var whatsapp = builder.Services.AddWhatsApp<AgentHandler>()
+var whatsapp = builder.Services.AddWhatsApp(services => new LinkFormattingHandler(new AgentHandler(services.GetRequiredKeyedService<AIAgent>("gropilot"))))
     .UseOpenTelemetry("Gropilot")
     .UseLogging()
     .UseIgnore();
-
-var interactiveCreds = builder.Environment.IsDevelopment();
-builder.Configuration.AddAzureKeyVault(new Uri("https://gropilot.vault.azure.net/"), new DefaultAzureCredential(interactiveCreds));
 
 if (builder.Environment.IsProduction())
 {
@@ -56,5 +85,8 @@ else
           http.Timeout = TimeSpan.FromMinutes(30)));
 }
 
+#endregion
 
-builder.Build().Run();
+var app = builder.Build();
+
+app.Run();

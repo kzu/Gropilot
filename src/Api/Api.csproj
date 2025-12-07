@@ -3,19 +3,34 @@
     <TargetFramework>net10.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
+    <NoWarn>OPENAI001;MEAI001;DEAI001;$(NoWarn)</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
+    <PackageReference Include="Devlooped.Extensions.AI.Grok" Version="0.9.1" />
     <PackageReference Include="Devlooped.WhatsApp" Version="1.0.0-rc.15" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.0.0-alpha.251204.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.50.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
+    <PackageReference Include="ThisAssembly.Project" Version="2.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gropilot\Gropilot.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectProperty Include="AgentFiles" />
+  </ItemGroup>
+  <Target Name="CollectAgentFiles" Condition="!$(CI)" BeforeTargets="PrepareProjectProperties" DependsOnTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <AgentFile Include="@(AllItemsFullPathWithTargetPath -&gt; WithMetadataValue('Extension', '.md'))" />
+    </ItemGroup>
+    <PropertyGroup>
+      <AgentFiles>@(AgentFile)</AgentFiles>
+    </PropertyGroup>
+  </Target>
 </Project>
