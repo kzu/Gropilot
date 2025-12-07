@@ -45,7 +45,7 @@ builder.Services.AddAIAgent("gropilot",
     """,
     """
     Grok-powered developer copilot for your all your GitHub needs.
-    """, 
+    """,
     "grok")
     .WithAITool(new HostedMcpServerTool("GitHub", "https://api.githubcopilot.com/mcp/")
     {
