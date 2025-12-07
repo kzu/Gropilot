@@ -2,8 +2,14 @@
   "profiles": {
     "Api": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7031",
-      "launchBrowser": false
+      "commandLineArgs": "--port 4242",
+      "launchBrowser": false,
+      "devTunnelEnabled": true,
+      "environmentVariables": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "WhatsApp:ConsoleRender": "true"
+      }
     }
   }
 }
